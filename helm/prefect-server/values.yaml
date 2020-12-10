@@ -12,7 +12,7 @@ prefectVersionTag:  "latest"
 imagePullSecrets: []
 
 # annotations to merge into all object configurations
-# NOTE: These will not apply to the postgresql subchart and must be 
+# NOTE: These will not apply to the postgresql subchart and must be
 # defined within `postgresql` as well if that is desired
 annotations: {}
 
@@ -177,7 +177,7 @@ apollo:
   service:
     # type defines the service type and defaults to LoadBalancer
     # to expose the apollo service to users and the UI.
-    type: LoadBalancer
+    type: NodePort
     port: 4200
 
   labels: {}
@@ -203,12 +203,12 @@ ui:
   # GraphQL server. This location must be accessible by the
   # user of the API because the browser is making requests
   # (not the ui server)
-  apolloApiUrl: http://localhost:4200/graphql
+  apolloApiUrl: http://192.168.99.100:30757/graphql
 
   service:
     # type defines the service type and defaults to LoadBalancer
     # to expose the ui service to users and the UI.
-    type: LoadBalancer
+    type: NodePort
     port: 8080
 
   labels: {}
@@ -269,7 +269,7 @@ agent:
   affinity: {}
 
   # resources defines the computational resources for the Prefect Agent
-  resources: 
+  resources:
     limits:
       cpu: 100m
       memory: 128Mi
@@ -284,7 +284,7 @@ agent:
       requests:
         memory: ""
         cpu: ""
-    
+
     # imagePullPolicy configures the image pull policy for the flow job
     imagePullPolicy: ""
 
