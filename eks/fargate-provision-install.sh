@@ -1,3 +1,5 @@
+# Mostly following https://www.eksworkshop.com/beginner/180_fargate/
+
 eksctl create cluster \
 --profile rld244-sandbox \
 --name test \
@@ -116,11 +118,11 @@ aws iam delete-policy \
 
 kubectl delete -k github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master
 
-# eksctl delete fargateprofile \
-#   --name game-2048 \
-#   --cluster eksworkshop-eksctl
-
+eksctl delete fargateprofile \
+  --profile rld244-sandbox \
+  --name prefect \
+  --cluster test
 
 eksctl delete cluster \
---profile rld244-sandbox \
---name test
+  --profile rld244-sandbox \
+  --name test
