@@ -97,6 +97,20 @@ class TestModel:
             "child": {"data": {"grandchildren": {"data": [{"x": 1}, {"x": 2}]}}}
         }
 
+    def test_primary_key_property(self):
+        class Model(orm.HasuraModel):
+
+            id: int
+            custom_id: int
+
+        class CustomModel(orm.HasuraModel):
+            __primary_key__ = "custom_id"
+            id: int
+            custom_id: int
+
+        assert Model(id=1, custom_id=2).primary_key == 1
+        assert CustomModel(id=1, custom_id=2).primary_key == 2
+
 
 class TestFields:
     async def test_UUIDString_is_a_string(self):
@@ -345,7 +359,7 @@ class TestModelQuery:
             == 2
         )
 
-    async def test_update(
+    async def test_update_set(
         self,
         flow_ids,
     ):
@@ -354,6 +368,64 @@ class TestModelQuery:
         )
         names = set(p.name for p in await models.Project.where({}).get("name"))
         assert names == {"test", "f2", "f3"}
+
+    async def test_update_increment(
+        self,
+        flow_run_id,
+    ):
+        fr1 = await models.FlowRun.where(id=flow_run_id).first({"version"})
+        await models.FlowRun.where(id=flow_run_id).update(increment={"version": 5})
+        fr2 = await models.FlowRun.where(id=flow_run_id).first({"version"})
+        assert fr2.version == fr1.version + 5
+
+    async def test_update_append(
+        self,
+        task_id,
+    ):
+        t1 = await models.Task.where(id=task_id).first({"tags"})
+        await models.Task.where(id=task_id).update(append={"tags": "abc-xyz"})
+        t2 = await models.Task.where(id=task_id).first({"tags"})
+        assert len(t2.tags) == len(t1.tags) + 1
+        assert t2.tags[-1] == "abc-xyz"
+
+    async def test_update_prepend(
+        self,
+        task_id,
+    ):
+        t1 = await models.Task.where(id=task_id).first({"tags"})
+        await models.Task.where(id=task_id).update(prepend={"tags": "abc-xyz"})
+        t2 = await models.Task.where(id=task_id).first({"tags"})
+        assert len(t2.tags) == len(t1.tags) + 1
+        assert t2.tags[0] == "abc-xyz"
+
+    async def test_update_delete_key_array(
+        self,
+        task_id,
+    ):
+        await models.Task.where(id=task_id).update(set={"tags": ["a", "b", "c", "d"]})
+        await models.Task.where(id=task_id).update(delete_key={"tags": "c"})
+        t1 = await models.Task.where(id=task_id).first({"tags"})
+        assert t1.tags == ["a", "b", "d"]
+
+    async def test_update_delete_elem_array(
+        self,
+        task_id,
+    ):
+        await models.Task.where(id=task_id).update(set={"tags": ["a", "b", "c", "d"]})
+        await models.Task.where(id=task_id).update(delete_elem={"tags": 2})
+        t1 = await models.Task.where(id=task_id).first({"tags"})
+        assert t1.tags == ["a", "b", "d"]
+
+    async def test_update_delete_key_obj(
+        self,
+        flow_run_id,
+    ):
+        await models.FlowRun.where(id=flow_run_id).update(
+            set={"context": {"a": 1, "b": 2, "c": 3}}
+        )
+        await models.FlowRun.where(id=flow_run_id).update(delete_key={"context": "c"})
+        fr = await models.FlowRun.where(id=flow_run_id).first({"context"})
+        assert fr.context == {"a": 1, "b": 2}
 
     async def test_delete(
         self,
