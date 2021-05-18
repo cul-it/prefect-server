@@ -108,7 +108,8 @@ helm uninstall aws-load-balancer-controller \
     -n kube-system
 
 eksctl delete iamserviceaccount \
-    --cluster eksworkshop-eksctl \
+    --profile rld244-sandbox \
+    --cluster test \
     --name aws-load-balancer-controller \
     --namespace kube-system \
     --wait
@@ -125,4 +126,5 @@ eksctl delete fargateprofile \
 
 eksctl delete cluster \
   --profile rld244-sandbox \
-  --name test
+  --name test \
+  --wait
